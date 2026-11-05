@@ -1,0 +1,9 @@
+customer_segment,day_type,n_records,occupancy_pct,adr_idr_k,revpar_idr_k,avg_discount_pct,promo_penetration_pct,pct_of_segment_revenue,occupancy_delta_pts,adr_delta_pct,revpar_delta_pct,revpar_rank_within_daytype
+Budget Seeker,Weekday,327,84.8,509,432,18.6,75.2,68.8,,,,4
+Budget Seeker,Weekend,136,91.1,508,463,18.0,75.0,31.2,6.3,-0.3,7.2,3
+Business Traveler,Weekday,313,62.2,1008,627,17.7,71.9,75.7,,,,3
+Business Traveler,Weekend,143,47.2,916,432,16.5,67.8,24.3,-15.0,-9.1,-31.1,4
+Family Leisure,Weekday,391,75.8,975,739,15.8,70.1,62.8,,,,2
+Family Leisure,Weekend,182,88.6,1075,952,16.4,69.8,37.2,12.8,10.2,28.8,2
+Premium Luxury,Weekday,358,60.1,2308,1388,16.2,71.8,68.0,,,,1
+Premium Luxury,Weekend,150,68.5,2164,1483,14.1,66.7,32.0,8.4,-6.2,6.8,1

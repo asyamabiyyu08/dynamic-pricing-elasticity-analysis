@@ -1,0 +1,41 @@
+dimension,grp,discount_band,n_records,avg_price_index,avg_occupancy_pct,pct_chg_price_vs_prev_band,pct_chg_volume_vs_prev_band,arc_elasticity_step,arc_elasticity_vs_full_price,elasticity_core,elasticity_all_rows,demand_type
+category,Budget Hotel,0% (full price),139,1.000,63.5,,,,,-1.27,-0.79,ELASTIC
+category,Budget Hotel,1-10%,77,0.919,75.1,-8.1,18.2,-2.24,-2.24,-1.27,-0.79,ELASTIC
+category,Budget Hotel,11-20%,115,0.824,83.7,-10.4,11.5,-1.11,-1.80,-1.27,-0.79,ELASTIC
+category,Budget Hotel,21-30%,102,0.719,92.0,-12.7,9.9,-0.78,-1.59,-1.27,-0.79,ELASTIC
+category,Budget Hotel,31%+,88,0.605,94.1,-15.9,2.3,-0.14,-1.21,-1.27,-0.79,ELASTIC
+category,Midscale Hotel,0% (full price),146,1.000,58.8,,,,,-1.19,-0.76,ELASTIC
+category,Midscale Hotel,1-10%,67,0.922,63.8,-7.8,8.5,-1.08,-1.08,-1.19,-0.76,ELASTIC
+category,Midscale Hotel,11-20%,107,0.823,77.5,-10.7,21.4,-1.99,-1.79,-1.19,-0.76,ELASTIC
+category,Midscale Hotel,21-30%,96,0.721,84.6,-12.4,9.3,-0.75,-1.57,-1.19,-0.76,ELASTIC
+category,Midscale Hotel,31%+,87,0.603,83.3,-16.3,-1.6,0.10,-1.05,-1.19,-0.76,ELASTIC
+category,Luxury Resort,0% (full price),152,1.000,59.7,,,,,-0.75,-0.30,INELASTIC
+category,Luxury Resort,1-10%,82,0.920,62.6,-8.0,5.0,-0.62,-0.62,-0.75,-0.30,INELASTIC
+category,Luxury Resort,11-20%,100,0.824,67.5,-10.4,7.7,-0.74,-0.74,-0.75,-0.30,INELASTIC
+category,Luxury Resort,21-30%,88,0.720,68.7,-12.6,1.8,-0.14,-0.54,-0.75,-0.30,INELASTIC
+category,Luxury Resort,31%+,65,0.588,68.6,-18.3,-0.1,0.01,-0.36,-0.75,-0.30,INELASTIC
+category,Upscale Hotel,0% (full price),135,1.000,60.2,,,,,-0.56,-0.53,INELASTIC
+category,Upscale Hotel,1-10%,78,0.917,59.4,-8.3,-1.3,0.16,0.16,-0.56,-0.53,INELASTIC
+category,Upscale Hotel,11-20%,97,0.825,69.9,-10.1,17.6,-1.75,-0.92,-0.56,-0.53,INELASTIC
+category,Upscale Hotel,21-30%,95,0.719,76.5,-12.8,9.5,-0.74,-0.96,-0.56,-0.53,INELASTIC
+category,Upscale Hotel,31%+,84,0.598,78.6,-16.9,2.8,-0.16,-0.76,-0.56,-0.53,INELASTIC
+segment,Budget Seeker,0% (full price),115,1.000,65.1,,,,,-1.66,-0.87,ELASTIC
+segment,Budget Seeker,1-10%,58,0.918,78.0,-8.2,19.8,-2.42,-2.42,-1.66,-0.87,ELASTIC
+segment,Budget Seeker,11-20%,106,0.821,91.7,-10.6,17.5,-1.65,-2.27,-1.66,-0.87,ELASTIC
+segment,Budget Seeker,21-30%,105,0.720,98.8,-12.3,7.7,-0.63,-1.84,-1.66,-0.87,ELASTIC
+segment,Budget Seeker,31%+,79,0.594,100.0,-17.5,1.3,-0.07,-1.32,-1.66,-0.87,ELASTIC
+segment,Family Leisure,0% (full price),172,1.000,64.9,,,,,-1.22,-0.87,ELASTIC
+segment,Family Leisure,1-10%,88,0.919,73.0,-8.1,12.5,-1.54,-1.54,-1.22,-0.87,ELASTIC
+segment,Family Leisure,11-20%,125,0.826,81.7,-10.1,11.9,-1.17,-1.49,-1.22,-0.87,ELASTIC
+segment,Family Leisure,21-30%,105,0.720,91.4,-12.8,11.9,-0.93,-1.46,-1.22,-0.87,ELASTIC
+segment,Family Leisure,31%+,83,0.599,98.1,-16.8,7.3,-0.43,-1.27,-1.22,-0.87,ELASTIC
+segment,Business Traveler,0% (full price),134,1.000,50.1,,,,,-0.61,-0.58,INELASTIC
+segment,Business Traveler,1-10%,67,0.916,51.9,-8.4,3.5,-0.42,-0.42,-0.61,-0.58,INELASTIC
+segment,Business Traveler,11-20%,79,0.823,56.4,-10.1,8.8,-0.87,-0.72,-0.61,-0.58,INELASTIC
+segment,Business Traveler,21-30%,89,0.717,60.5,-12.9,7.3,-0.57,-0.74,-0.61,-0.58,INELASTIC
+segment,Business Traveler,31%+,87,0.608,69.6,-15.3,15.0,-0.98,-0.99,-0.61,-0.58,INELASTIC
+segment,Premium Luxury,0% (full price),151,1.000,61.3,,,,,-0.30,-0.07,INELASTIC
+segment,Premium Luxury,1-10%,91,0.924,59.3,-7.6,-3.1,0.41,0.41,-0.30,-0.07,INELASTIC
+segment,Premium Luxury,11-20%,109,0.825,64.7,-10.7,9.0,-0.84,-0.32,-0.30,-0.07,INELASTIC
+segment,Premium Luxury,21-30%,82,0.722,66.6,-12.5,3.0,-0.24,-0.31,-0.30,-0.07,INELASTIC
+segment,Premium Luxury,31%+,75,0.595,59.9,-17.5,-10.1,0.58,0.06,-0.30,-0.07,INELASTIC

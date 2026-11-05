@@ -1,0 +1,20 @@
+customer_segment,event_flag,n_normal,n_deep,sample_confidence,occupancy_normal_pct,occupancy_deep_pct,yield_normal_pct,yield_deep_pct,revenue_delta_pct,deep_sold_out_pct,net_revenue_impact_idr_mn,verdict,severity_rank
+Premium Luxury,Payday Sale,16,17,High,60.0,55.8,60.0,34.7,-42.1,0.0,-232.2,CANNIBALIZATION,1
+Premium Luxury,Libur Nasional,13,7,Low (directional),84.0,81.3,84.0,53.6,-36.2,28.6,-144.6,CANNIBALIZATION,2
+Premium Luxury,Regular Weekday,74,69,High,56.6,56.9,56.6,36.3,-35.8,1.4,-986.6,CANNIBALIZATION,3
+Premium Luxury,Weekend,39,22,High,64.7,68.6,64.7,43.0,-33.6,4.5,-341.9,CANNIBALIZATION,4
+Family Leisure,Libur Nasional,8,10,Low (directional),87.2,100.0,87.2,62.0,-28.9,100.0,-140.9,CANNIBALIZATION,5
+Budget Seeker,Payday Sale,13,14,Medium,86.6,100.0,86.6,65.7,-24.2,100.0,-153.4,CANNIBALIZATION,6
+Business Traveler,Weekend,35,29,High,39.6,46.7,39.6,30.4,-23.1,0.0,-97.5,CANNIBALIZATION,7
+Family Leisure,Weekend,45,35,High,80.3,98.9,80.3,63.8,-20.5,94.3,-296.7,CANNIBALIZATION,8
+Premium Luxury,Double Date Sale,9,6,Low (directional),54.0,66.7,54.0,43.8,-18.8,0.0,-53.3,CANNIBALIZATION,9
+Business Traveler,Regular Weekday,72,66,High,56.7,72.1,56.7,46.2,-18.5,3.0,-288.7,CANNIBALIZATION,10
+Business Traveler,Payday Sale,14,31,Medium,54.5,76.5,54.5,47.7,-12.6,16.1,-98.1,CANNIBALIZATION,11
+Budget Seeker,Libur Nasional,5,8,Low (directional),74.6,100.0,74.6,65.6,-12.0,100.0,-25.5,CANNIBALIZATION,12
+Budget Seeker,Weekend,27,32,High,70.6,100.0,70.6,63.6,-9.9,100.0,-69.0,CANNIBALIZATION,13
+Family Leisure,Double Date Sale,5,17,Low (directional),71.7,98.0,71.7,64.8,-9.6,82.4,-47.3,CANNIBALIZATION,14
+Business Traveler,Double Date Sale,6,11,Low (directional),43.4,62.6,43.4,41.1,-5.3,9.1,-10.0,CANNIBALIZATION,15
+Family Leisure,Regular Weekday,98,61,High,56.6,94.8,56.6,59.3,4.9,60.7,34.1,Incremental,16
+Family Leisure,Payday Sale,16,22,High,59.7,95.3,59.7,63.8,6.9,72.7,45.8,Incremental,17
+Business Traveler,Libur Nasional,7,8,Low (directional),31.6,51.2,31.6,34.1,7.9,0.0,8.5,Incremental,18
+Budget Seeker,Regular Weekday,69,78,High,57.9,99.6,57.9,63.6,9.9,98.7,123.3,Incremental,19
