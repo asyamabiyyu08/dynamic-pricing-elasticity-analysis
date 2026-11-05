@@ -1,0 +1,428 @@
+<title>Pricing Elasticity Dashboard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout concept: a revenue-manager's console. Filters first, KPI strip, then one analysis per tab.
+   Tokens: slate-teal neutrals, validated categorical order (blue, orange, aqua, yellow) reserved for the four
+   customer segments, blue/orange diverging pair for gain/loss. Fonts: IBM Plex Sans + Plex Mono for figures. */
+:root{
+  --bg:#f3f5f6; --surface:#ffffff; --surface2:#f8f9fa; --ink:#12181d; --ink2:#46515a; --muted:#6f7b84;
+  --line:#d9dfe3; --grid:#e8ecee; --accent-bg:#1d3a4c; --accent-fg:#ffffff; --focus:#2a78d6;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+  --pos:#2a78d6; --neg:#eb6834; --wk0:#9aa5ad; --wk1:#1d3a4c;
+  --font:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1316; --surface:#161c20; --surface2:#1b2227; --ink:#eceff1; --ink2:#b3bdc4; --muted:#8b969d;
+  --line:#2b343a; --grid:#242c31; --accent-bg:#cfe3f0; --accent-fg:#0e1316; --focus:#5a9cf0;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --pos:#3987e5; --neg:#d95926; --wk0:#6c7881; --wk1:#cfe3f0; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0e1316; --surface:#161c20; --surface2:#1b2227; --ink:#eceff1; --ink2:#b3bdc4; --muted:#8b969d;
+  --line:#2b343a; --grid:#242c31; --accent-bg:#cfe3f0; --accent-fg:#0e1316; --focus:#5a9cf0;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --pos:#3987e5; --neg:#d95926; --wk0:#6c7881; --wk1:#cfe3f0; color-scheme:dark;}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;padding-block:24px 40px;display:flex;flex-direction:column;gap:16px}
+h1{font-size:22px;line-height:1.25;margin:0;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+h2{font-size:16px;margin:0;font-weight:600;text-wrap:balance}
+h3{font-size:12px;margin:0;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+p{margin:0}
+a{color:inherit}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px 24px;flex-wrap:wrap}
+.top .sub{color:var(--ink2);margin-top:4px;max-width:70ch}
+.top .repo{font-size:13px;color:var(--ink2)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* filters */
+.filters{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-start}
+.fgroup{display:flex;flex-direction:column;gap:6px;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:13px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface2);color:var(--ink2);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent-bg);color:var(--accent-fg);border-color:var(--accent-bg)}
+.chip:hover{border-color:var(--ink2)}
+select{font:inherit;font-size:13px;padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface2);color:var(--ink)}
+.fright{margin-left:auto;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.count{font-size:13px;color:var(--ink2)}
+.btn{font:inherit;font-size:13px;padding:5px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--ink2)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* KPI strip */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.kpi{padding:12px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 -1px -1px 0;min-width:0}
+.kpi .l{font-size:12px;color:var(--muted)}
+.kpi .v{font-family:var(--mono);font-size:21px;font-weight:500;font-variant-numeric:tabular-nums;margin-top:2px}
+.kpi .s{font-size:12px;color:var(--ink2)}
+
+/* tabs */
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line)}
+.tab{font:inherit;font-size:14px;padding:9px 14px;border:0;background:none;color:var(--ink2);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
+.tab:hover{color:var(--ink)}
+
+/* panels */
+.panel{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0;display:flex;flex-direction:column;gap:10px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+.cap{color:var(--ink2);max-width:80ch}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.legend i.ln{height:0;width:16px;border-top:2px solid;border-radius:0;vertical-align:3px}
+.legend i.dash{border-top-style:dashed}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;align-self:flex-start}
+.seg button{font:inherit;font-size:13px;padding:5px 12px;border:0;background:var(--surface2);color:var(--ink2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent-bg);color:var(--accent-fg)}
+.chart{position:relative;width:100%;min-height:200px}
+.chart svg{display:block;overflow:visible}
+.ax-t{fill:var(--muted);font-size:11px;font-family:var(--font)}
+.ax-l{fill:var(--ink2);font-size:12px;font-family:var(--font)}
+.val-t{fill:var(--ink);font-size:11px;font-family:var(--mono)}
+.gl{stroke:var(--grid);stroke-width:1}
+.zl{stroke:var(--ink2);stroke-width:1}
+.tip{position:absolute;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.14);z-index:5;min-width:140px;max-width:260px}
+.tip b{display:block;margin-bottom:4px}
+.tip .r{display:flex;justify-content:space-between;gap:12px}
+.tip .r span:first-child i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.tip .num{font-size:12px}
+
+/* tables */
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:right;padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child,th.tl,td.tl{text-align:left}
+th{font-weight:600;color:var(--muted);font-size:12px}
+td.num{font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:500;border:1px solid var(--line);background:var(--surface2);white-space:nowrap}
+.pill.neg{border-color:var(--neg);color:var(--ink)}
+.pill.pos{border-color:var(--pos);color:var(--ink)}
+.dim{color:var(--muted)}
+
+/* heatmap */
+.heat{display:grid;grid-template-columns:minmax(110px,150px) repeat(5,minmax(78px,1fr));gap:2px;min-width:640px}
+.heat .h{font-size:12px;color:var(--muted);padding:6px 4px;text-align:center}
+.heat .rl{font-size:13px;color:var(--ink2);padding:6px 4px;align-self:center}
+.heat .c{--cell:var(--surface2);background:var(--cell);border-radius:6px;padding:9px 4px;text-align:center;min-height:52px}
+.heat .c b{display:block;font-family:var(--mono);font-size:15px;font-weight:500}
+.heat .c small{font-size:11px;color:var(--ink2)}
+.heat .c.na{color:var(--muted)}
+
+/* playbook */
+.rec{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.rec .card h2{font-size:15px}
+.rec ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;color:var(--ink2)}
+.foot{color:var(--muted);font-size:12px;max-width:90ch}
+.empty{color:var(--muted);padding:24px 0;text-align:center}
+@media (prefers-reduced-motion:no-preference){.panel{animation:fade .18s ease-out}@keyframes fade{from{opacity:.4}to{opacity:1}}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Dynamic Pricing &amp; Promotion Elasticity</h1>
+      <p class="sub">Which customer segments respond to discounts, where promotions give revenue away, and what discount depth pays. 2,000 synthetic bookings, 32 properties, May–Oct 2026.</p>
+    </div>
+    <p class="repo"><a href="https://github.com/asyamabiyyu08/dynamic-pricing-elasticity-analysis" target="_blank" rel="noopener">Code &amp; SQL on GitHub</a></p>
+  </header>
+
+  <section class="filters" aria-label="Filters">
+    <div class="fgroup"><h3>Category</h3><div class="chips" id="f-cat"></div></div>
+    <div class="fgroup"><h3>Segment</h3><div class="chips" id="f-seg"></div></div>
+    <div class="fgroup"><h3>Event</h3><div class="chips" id="f-ev"></div></div>
+    <div class="fgroup"><h3>Month</h3>
+      <select id="f-month" aria-label="Month"><option value="all">All months</option></select></div>
+    <div class="fright"><span class="count" id="count"></span><button class="btn" id="reset" type="button">Reset filters</button></div>
+  </section>
+
+  <section class="kpis" id="kpis" aria-label="Key figures"></section>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-tab="overview">Overview</button>
+    <button class="tab" role="tab" data-tab="elasticity">Elasticity</button>
+    <button class="tab" role="tab" data-tab="cannibalization">Cannibalization</button>
+    <button class="tab" role="tab" data-tab="weekend">Weekend vs weekday</button>
+    <button class="tab" role="tab" data-tab="efficiency">Promo efficiency</button>
+    <button class="tab" role="tab" data-tab="playbook">Discount playbook</button>
+  </nav>
+
+  <main id="panel" class="panel" role="tabpanel"></main>
+
+  <p class="foot">All data is synthetic, generated from a documented demand model (see the repository). Revenue yield = revenue ÷ (rack rate × rooms available); RevPAR = revenue per available room-night. Figures recompute in your browser from the 2,000 booking records whenever a filter changes. Results are observational and directional.</p>
+</div>
+
+<script>
+const DATA = __DATA__;
+</script>
+<script>
+(function(){
+'use strict';
+/* ---------- data ---------- */
+const SEGS=['Budget Seeker','Family Leisure','Business Traveler','Premium Luxury'];
+const CATS=['Budget Hotel','Midscale Hotel','Upscale Hotel','Luxury Resort'];
+const EVS=['Regular Weekday','Weekend','Payday Sale','Double Date Sale','Libur Nasional'];
+const SEGVAR={'Budget Seeker':'var(--s1)','Family Leisure':'var(--s2)','Business Traveler':'var(--s3)','Premium Luxury':'var(--s4)'};
+const BANDS=['0%','1–10%','11–20%','21–30%','31%+'];
+const MONTHS=['May','Jun','Jul','Aug','Sep','Oct'];
+const bandOf=d=>d===0?0:d<=10?1:d<=20?2:d<=30?3:4;
+
+const ALL=DATA.rows.map(r=>{
+  const [id,date,prop,cat,base,disc,fin,units,seg,ev,comp,rooms]=r;
+  const dt=new Date(date+'T00:00:00Z'); const dow=dt.getUTCDay();
+  const rev=fin*units, pot=base*rooms;
+  return {id,date,prop,cat,base,disc,fin,units,seg,ev,comp,rooms,rev,pot,
+    month:dt.getUTCMonth()-4, weekend:(dow===0||dow===6), yld:rev/pot, occ:units/rooms, pi:fin/base,
+    band:bandOf(disc), peak:(ev==='Libur Nasional'||ev==='Weekend')};
+});
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const mean=a=>a.length?sum(a)/a.length:NaN;
+const isn=Number.isFinite;
+const f1=(x,d=1)=>isn(x)?x.toFixed(d):'–';
+const pct=(x,d=1)=>isn(x)?(x*100).toFixed(d)+'%':'–';
+const sgn=(x,d=1,suf='%')=>isn(x)?(x>=0?'+':'−')+Math.abs(x).toFixed(d)+suf:'–';
+const bn=x=>(x/1e9).toFixed(2);
+const k=x=>Math.round(x/1e3).toLocaleString('en-US');
+function slope(xs,ys){const n=xs.length;if(n<8)return NaN;const mx=mean(xs),my=mean(ys);let c=0,v=0;for(let i=0;i<n;i++){c+=(xs[i]-mx)*(ys[i]-my);v+=(xs[i]-mx)**2}return v>0?c/v:NaN}
+function groupBy(rows,fn){const m=new Map();rows.forEach(r=>{const key=fn(r);if(!m.has(key))m.set(key,[]);m.get(key).push(r)});return m}
+
+/* ---------- state ---------- */
+const state={cat:new Set(),seg:new Set(),ev:new Set(),month:'all',tab:'overview',elDim:'seg',effMode:'top',ctx:'Non-peak'};
+const TABS=['overview','elasticity','cannibalization','weekend','efficiency','playbook'];
+function rows(){return ALL.filter(r=>(!state.cat.size||state.cat.has(r.cat))&&(!state.seg.size||state.seg.has(r.seg))&&
+  (!state.ev.size||state.ev.has(r.ev))&&(state.month==='all'||r.month===+state.month))}
+
+/* ---------- tiny SVG chart kit (no dependencies) ---------- */
+const tipEl=()=>{let t=document.querySelector('.tip');return t};
+function niceScale(min,max,n=5){if(min===max){max=min+1}const span=max-min,s0=span/n,mag=Math.pow(10,Math.floor(Math.log10(s0))),nm=s0/mag;
+  const step=(nm<1.5?1:nm<3?2:nm<7?5:10)*mag;const lo=Math.floor(min/step+1e-9)*step,hi=Math.ceil(max/step-1e-9)*step;const ticks=[];
+  for(let v=lo;v<=hi+step*1e-3;v+=step)ticks.push(+v.toFixed(10));return{lo,hi,ticks}}
+function legendHTML(items){return '<div class="legend">'+items.map(i=>`<span><i class="${i.cls||''}" style="${i.cls?'border-color:':'background:'}${i.color}"></i>${i.name}</span>`).join('')+'</div>'}
+function showTip(box,html,x,y){let t=box.querySelector('.tip');if(!t){t=document.createElement('div');t.className='tip';box.appendChild(t)}
+  t.innerHTML=html;t.style.display='block';const w=t.offsetWidth,W=box.clientWidth;let left=x+14;if(left+w>W)left=x-w-14;if(left<0)left=0;
+  t.style.left=left+'px';t.style.top=Math.max(0,y-10)+'px'}
+function hideTip(box){const t=box.querySelector('.tip');if(t)t.style.display='none'}
+function tipHTML(title,rowsArr){return `<b>${title}</b>`+rowsArr.map(r=>`<div class="r"><span>${r.color?`<i style="background:${r.color}"></i>`:''}${r.name}</span><span class="num">${r.v}</span></div>`).join('')}
+
+function lineChart(id,o){ // o: labels, series[{name,color,values,dash}], yFmt, h, marks[{s,i}], zero
+  const box=document.getElementById(id);if(!box)return;box.querySelectorAll('svg').forEach(s=>s.remove());
+  const W=Math.max(280,box.clientWidth),H=o.h||300,m={l:52,r:18,t:12,b:32};
+  const vals=o.series.flatMap(s=>s.values).filter(isn);if(!vals.length){box.innerHTML='<div class="empty">Not enough records for the current filters.</div>';return}
+  let mn=Math.min(...vals),mx=Math.max(...vals);if(o.zero){mn=Math.min(mn,0);mx=Math.max(mx,0)}
+  const pad=(mx-mn)*.06;const sc=niceScale(mn-(o.zero?0:pad),mx+pad,5);
+  const iw=W-m.l-m.r,ih=H-m.t-m.b,n=o.labels.length;
+  const X=i=>m.l+iw*(n===1?.5:(i+.5)/n),Y=v=>m.t+ih*(1-(v-sc.lo)/(sc.hi-sc.lo));
+  let s=`<svg width="${W}" height="${H}" role="img" aria-label="${o.aria||'Line chart'}">`;
+  sc.ticks.forEach(t=>{s+=`<line class="${t===0?'zl':'gl'}" x1="${m.l}" x2="${W-m.r}" y1="${Y(t)}" y2="${Y(t)}"/><text class="ax-t" x="${m.l-8}" y="${Y(t)+4}" text-anchor="end">${o.yFmt(t)}</text>`});
+  o.labels.forEach((l,i)=>{s+=`<text class="ax-t" x="${X(i)}" y="${H-10}" text-anchor="middle">${l}</text>`});
+  s+=`<line class="zl" id="${id}-x" x1="0" x2="0" y1="${m.t}" y2="${m.t+ih}" style="display:none;stroke-dasharray:3 3"/>`;
+  o.series.forEach(se=>{let d='';se.values.forEach((v,i)=>{if(isn(v))d+=(d?'L':'M')+X(i)+' '+Y(v)});
+    s+=`<path d="${d}" fill="none" style="stroke:${se.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" ${se.dash?'stroke-dasharray="5 4"':''}/>`;
+    se.values.forEach((v,i)=>{if(isn(v))s+=`<circle cx="${X(i)}" cy="${Y(v)}" r="4" style="fill:${se.color};stroke:var(--surface)" stroke-width="2"/>`})});
+  (o.marks||[]).forEach(mk=>{const se=o.series[mk.s],v=se.values[mk.i];if(isn(v))s+=`<circle cx="${X(mk.i)}" cy="${Y(v)}" r="9" fill="none" style="stroke:${se.color}" stroke-width="2"/>`});
+  const sw=iw/n;o.labels.forEach((l,i)=>{s+=`<rect data-i="${i}" x="${X(i)-sw/2}" y="${m.t}" width="${sw}" height="${ih}" fill="transparent"/>`});
+  s+='</svg>';box.insertAdjacentHTML('afterbegin',s);
+  const svg=box.querySelector('svg'),xl=svg.querySelector('#'+id+'-x');
+  svg.querySelectorAll('rect[data-i]').forEach(r=>{const i=+r.dataset.i;
+    const on=e=>{xl.setAttribute('x1',X(i));xl.setAttribute('x2',X(i));xl.style.display='';const b=box.getBoundingClientRect();
+      showTip(box,tipHTML(o.labels[i],o.series.map(se=>({name:se.name,color:se.color,v:isn(se.values[i])?o.yFmt(se.values[i],true):'–'}))),e.clientX-b.left,e.clientY-b.top)};
+    r.addEventListener('pointermove',on);r.addEventListener('pointerenter',on);r.addEventListener('pointerleave',()=>{xl.style.display='none';hideTip(box)})})}
+
+function barPath(x,y0,y1,w,r){ // rounded only at the data end (y1), flat at baseline (y0)
+  const up=y1<y0,h=Math.abs(y1-y0),rr=Math.min(r,h,w/2);if(h<.5)return `M${x} ${y0}h${w}`;
+  return up?`M${x} ${y0}V${y1+rr}Q${x} ${y1} ${x+rr} ${y1}H${x+w-rr}Q${x+w} ${y1} ${x+w} ${y1+rr}V${y0}Z`
+           :`M${x} ${y0}V${y1-rr}Q${x} ${y1} ${x+rr} ${y1}H${x+w-rr}Q${x+w} ${y1} ${x+w} ${y1-rr}V${y0}Z`}
+function barChart(id,o){ // vertical; o: labels, series[{name,color,values}], stacked, yFmt, h
+  const box=document.getElementById(id);if(!box)return;box.querySelectorAll('svg').forEach(s=>s.remove());
+  const W=Math.max(280,box.clientWidth),H=o.h||300,m={l:52,r:18,t:12,b:34};const n=o.labels.length,ns=o.series.length;
+  let mn=0,mx=0;
+  if(o.stacked){for(let i=0;i<n;i++){const t=sum(o.series.map(s=>s.values[i]||0));mx=Math.max(mx,t)}}
+  else o.series.forEach(s=>s.values.forEach(v=>{if(isn(v)){mn=Math.min(mn,v);mx=Math.max(mx,v)}}));
+  if(mx===0&&mn===0){box.innerHTML='<div class="empty">Not enough records for the current filters.</div>';return}
+  const sc=niceScale(mn,mx*1.04,5),iw=W-m.l-m.r,ih=H-m.t-m.b,Y=v=>m.t+ih*(1-(v-sc.lo)/(sc.hi-sc.lo)),slot=iw/n,gw=Math.min(slot*.7,o.stacked?64:ns*34),bw=o.stacked?gw:(gw-(ns-1)*4)/ns;
+  let s=`<svg width="${W}" height="${H}" role="img" aria-label="${o.aria||'Bar chart'}">`;
+  sc.ticks.forEach(t=>{s+=`<line class="${t===0?'zl':'gl'}" x1="${m.l}" x2="${W-m.r}" y1="${Y(t)}" y2="${Y(t)}"/><text class="ax-t" x="${m.l-8}" y="${Y(t)+4}" text-anchor="end">${o.yFmt(t)}</text>`});
+  for(let i=0;i<n;i++){const cx=m.l+slot*(i+.5),x0=cx-gw/2;s+=`<text class="ax-t" x="${cx}" y="${H-12}" text-anchor="middle">${o.labels[i]}</text>`;
+    if(o.stacked){let acc=0;o.series.forEach(se=>{const v=se.values[i]||0;if(v<=0)return;const ya=Y(acc),yb=Y(acc+v);acc+=v;
+      s+=`<rect x="${x0}" y="${yb}" width="${bw}" height="${Math.max(0,ya-yb)}" style="fill:${se.color};stroke:var(--surface)" stroke-width="2"/>`})}
+    else o.series.forEach((se,j)=>{const v=se.values[i];if(!isn(v))return;const x=x0+j*(bw+4);
+      s+=`<path d="${barPath(x,Y(0),Y(v),bw,4)}" style="fill:${se.color}"/><text class="val-t" x="${x+bw/2}" y="${v>=0?Y(v)-5:Y(v)+13}" text-anchor="middle">${o.valFmt?o.valFmt(v):''}</text>`});
+    s+=`<rect data-i="${i}" x="${m.l+slot*i}" y="${m.t}" width="${slot}" height="${ih}" fill="transparent"/>`}
+  s+='</svg>';box.insertAdjacentHTML('afterbegin',s);
+  box.querySelectorAll('rect[data-i]').forEach(r=>{const i=+r.dataset.i;
+    const on=e=>{const b=box.getBoundingClientRect();let rowsT=o.series.map(se=>({name:se.name,color:se.color,v:isn(se.values[i])?o.yFmt(se.values[i],true):'–'}));
+      if(o.stacked)rowsT.push({name:'Total',v:o.yFmt(sum(o.series.map(se=>se.values[i]||0)),true)});
+      showTip(box,tipHTML(o.labels[i],rowsT),e.clientX-b.left,e.clientY-b.top)};
+    r.addEventListener('pointermove',on);r.addEventListener('pointerenter',on);r.addEventListener('pointerleave',()=>hideTip(box))})}
+
+function hbarChart(id,o){ // o: items[{label,value,sub}], fmt, colorFn
+  const box=document.getElementById(id);if(!box)return;box.querySelectorAll('svg').forEach(s=>s.remove());
+  const W=Math.max(280,box.clientWidth),rh=30,H=o.items.length*rh+34,m={l:84,r:56,t:6,b:28};
+  if(!o.items.length){box.innerHTML='<div class="empty">Not enough records for the current filters.</div>';return}
+  const vs=o.items.map(i=>i.value);const sc=niceScale(Math.min(0,...vs),Math.max(0,...vs),4),iw=W-m.l-m.r,X=v=>m.l+iw*(v-sc.lo)/(sc.hi-sc.lo);
+  let s=`<svg width="${W}" height="${H}" role="img" aria-label="${o.aria||'Ranking'}">`;
+  sc.ticks.forEach(t=>{s+=`<line class="${t===0?'zl':'gl'}" x1="${X(t)}" x2="${X(t)}" y1="${m.t}" y2="${H-m.b}"/><text class="ax-t" x="${X(t)}" y="${H-10}" text-anchor="middle">${o.fmt(t,true)}</text>`});
+  o.items.forEach((it,i)=>{const y=m.t+i*rh+5,h=rh-12,x0=X(0),x1=X(it.value),x=Math.min(x0,x1),w=Math.abs(x1-x0);
+    s+=`<text class="ax-l" x="${m.l-8}" y="${y+h/2+4}" text-anchor="end">${it.label}</text>`;
+    s+=`<g data-i="${i}"><rect x="${m.l-80}" y="${y-5}" width="${W-m.l+80}" height="${rh}" fill="transparent"/><path d="${barPath(x0,y+h,y,0,0)}" fill="none"/>`+
+       `<rect x="${x}" y="${y}" width="${Math.max(1,w)}" height="${h}" rx="3" style="fill:${o.colorFn(it)}"/>`+
+       `<text class="val-t" x="${it.value>=0?x1+6:x1-6}" y="${y+h/2+4}" text-anchor="${it.value>=0?'start':'end'}">${o.fmt(it.value)}</text></g>`});
+  s+='</svg>';box.insertAdjacentHTML('afterbegin',s);
+  box.querySelectorAll('g[data-i]').forEach(g=>{const it=o.items[+g.dataset.i];
+    const on=e=>{const b=box.getBoundingClientRect();showTip(box,tipHTML(it.label,it.sub),e.clientX-b.left,e.clientY-b.top)};
+    g.addEventListener('pointermove',on);g.addEventListener('pointerenter',on);g.addEventListener('pointerleave',()=>hideTip(box))})}
+
+/* ---------- analytics (mirror the SQL files) ---------- */
+function kpis(rs){const rev=sum(rs.map(r=>r.rev)),u=sum(rs.map(r=>r.units)),ro=sum(rs.map(r=>r.rooms));const pr=rs.filter(r=>r.disc>0);
+  return{rev,occ:u/ro,adr:rev/u,revpar:rev/ro,promo:pr.length/rs.length,avgd:mean(pr.map(r=>r.disc)),n:rs.length}}
+function byBand(rs){return BANDS.map((b,i)=>{const g=rs.filter(r=>r.band===i);return{band:b,n:g.length,occ:mean(g.map(r=>r.occ)),yld:mean(g.map(r=>r.yld)),pi:mean(g.map(r=>r.pi))}})}
+function elasticity(rs,dim){
+  groupBy(rs,r=>r.cat+'|'+r.seg+'|'+r.ev).forEach(arr=>{const mo=mean(arr.map(r=>Math.log(r.occ))),mp=mean(arr.map(r=>Math.log(r.pi)));
+    arr.forEach(r=>{r._a=Math.log(r.occ)-mo;r._b=Math.log(r.pi)-mp})});
+  const keys=dim==='seg'?SEGS:CATS;
+  return keys.map(g=>{const gr=rs.filter(r=>r[dim]===g),bb=byBand(gr),core=gr.filter(r=>r.disc<=20);
+    const arc=i=>bb[i].n>=5&&bb[0].n>=5?((bb[i].occ/bb[0].occ-1)/(bb[i].pi/bb[0].pi-1)):NaN;
+    return{g,n:gr.length,bands:bb,core:slope(core.map(r=>r._b),core.map(r=>r._a)),arc1:arc(1),arc2:arc(2),arc3:arc(3),arc4:arc(4)}}).filter(x=>x.n>0)}
+function cannibal(rs){const out=[];groupBy(rs,r=>r.seg+'|'+r.ev).forEach((g,key)=>{const [seg,ev]=key.split('|');
+  const nm=g.filter(r=>r.disc===0),dp=g.filter(r=>r.disc>=30);if(nm.length<5||dp.length<5)return;
+  const yN=mean(nm.map(r=>r.yld)),yD=mean(dp.map(r=>r.yld));const net=sum(dp.map(r=>r.pot*(r.yld-yN)));
+  const mnN=Math.min(nm.length,dp.length);
+  out.push({seg,ev,nN:nm.length,nD:dp.length,yN,yD,delta:yD/yN-1,sold:mean(dp.map(r=>r.units===r.rooms?1:0)),net,
+    conf:mnN>=15?'High':mnN>=10?'Medium':'Low'})});return out}
+function weekend(rs){return SEGS.map(seg=>{const g=rs.filter(r=>r.seg===seg);const f=w=>{const a=g.filter(r=>r.weekend===w);if(!a.length)return null;
+  const rev=sum(a.map(r=>r.rev)),u=sum(a.map(r=>r.units)),ro=sum(a.map(r=>r.rooms));
+  return{n:a.length,occ:u/ro,adr:rev/u,revpar:rev/ro,promo:a.filter(r=>r.disc>0).length/a.length,disc:mean(a.map(r=>r.disc))}};
+  return{seg,wd:f(false),we:f(true)}}).filter(x=>x.wd||x.we)}
+function efficiency(rs){const out=[];groupBy(rs,r=>r.prop).forEach((g,p)=>{const fp=g.filter(r=>r.disc===0),pr=g.filter(r=>r.disc>0);
+  if(fp.length<10||pr.length<20)return;const yF=mean(fp.map(r=>r.yld)),yP=mean(pr.map(r=>r.yld)),ad=mean(pr.map(r=>r.disc));
+  out.push({prop:p,cat:g[0].cat,nF:fp.length,nP:pr.length,ad,upl:(yP/yF-1)*100,per:(yP/yF-1)*100/ad})});return out}
+function optimal(rs){const res={};SEGS.forEach(seg=>{res[seg]={};['Non-peak','Peak'].forEach(ctx=>{
+  const g=rs.filter(r=>r.seg===seg&&(r.peak===(ctx==='Peak')));const bb=BANDS.map((b,i)=>{const a=g.filter(r=>r.band===i);return{n:a.length,y:mean(a.map(r=>r.yld))}});
+  const base=bb[0].n>=15?bb[0].y:NaN;const vs=bb.map(b=>b.n>=15&&isn(base)?(b.y/base-1)*100:NaN);
+  let best=-1,bv=-Infinity;vs.forEach((v,i)=>{if(isn(v)&&v>bv){bv=v;best=i}});res[seg][ctx]={bb,vs,best}})});return res}
+
+/* ---------- views ---------- */
+const P=()=>$('#panel');
+const none='<div class="empty">Not enough records for the current filters. Reset or widen them.</div>';
+function pill(txt,cls){return `<span class="pill ${cls||''}">${txt}</span>`}
+
+function viewOverview(rs){
+  const bb=byBand(rs),segsPresent=SEGS.filter(s=>rs.some(r=>r.seg===s));
+  P().innerHTML=`<div class="grid2">
+    <div class="card"><h2>Occupancy vs. revenue yield by discount depth</h2>
+      <p class="cap">Occupancy is the share of rooms sold; revenue yield is the share of full-price revenue captured. Where the yield line turns down while occupancy keeps rising, the discount is buying volume at a loss.</p>
+      ${legendHTML([{name:'Occupancy',color:'var(--wk0)',cls:'ln dash'},{name:'Revenue yield',color:'var(--ink)',cls:'ln'}])}
+      <div class="chart" id="c-over1"></div></div>
+    <div class="card"><h2>Revenue by month and segment</h2>
+      <p class="cap">Gross revenue in IDR billions. Segment colors stay the same on every tab.</p>
+      ${legendHTML(SEGS.map(s=>({name:s,color:SEGVAR[s]})))}
+      <div class="chart" id="c-over2"></div></div></div>
+    <div class="card"><h2>Discount depth distribution</h2><div class="tw"><table><thead><tr><th>Discount</th><th>Bookings</th><th>Share</th><th>Avg price index</th><th>Occupancy</th><th>Revenue yield</th></tr></thead><tbody>
+    ${bb.map(b=>`<tr><td>${b.band}</td><td class="num">${b.n}</td><td class="num">${pct(b.n/rs.length)}</td><td class="num">${isn(b.pi)?b.pi.toFixed(3):'–'}</td><td class="num">${pct(b.occ)}</td><td class="num">${pct(b.yld)}</td></tr>`).join('')}</tbody></table></div></div>`;
+  lineChart('c-over1',{labels:BANDS,series:[{name:'Occupancy',color:'var(--wk0)',values:bb.map(b=>b.n>=5?b.occ*100:NaN),dash:true},{name:'Revenue yield',color:'var(--ink)',values:bb.map(b=>b.n>=5?b.yld*100:NaN)}],
+    yFmt:(v,t)=>t?v.toFixed(1)+'%':v+'%',h:290,aria:'Occupancy and revenue yield by discount band'});
+  barChart('c-over2',{labels:MONTHS,stacked:true,series:segsPresent.map(s=>({name:s,color:SEGVAR[s],values:MONTHS.map((_,mi)=>sum(rs.filter(r=>r.seg===s&&r.month===mi).map(r=>r.rev))/1e9)})),
+    yFmt:(v,t)=>t?v.toFixed(2)+' bn':v+'',h:290,aria:'Monthly revenue by segment'})}
+
+function viewElasticity(rs){
+  const dim=state.elDim,E=elasticity(rs,dim);if(!E.length){P().innerHTML=none;return}
+  P().innerHTML=`<div class="card"><h2>How much does volume move when price moves?</h2>
+    <p class="cap">Elasticity below −1 means a discount grows volume faster than it shrinks price (elastic). Between −1 and 0, a discount loses revenue (inelastic). The headline value uses discounts up to 20% and controls for event, segment and category; deeper discounts hit the 100% occupancy ceiling, which hides true demand.</p>
+    <div class="seg" role="group" aria-label="Group by"><button type="button" data-d="seg" aria-pressed="${dim==='seg'}">By segment</button><button type="button" data-d="cat" aria-pressed="${dim==='cat'}">By category</button></div>
+    ${legendHTML(E.map((e,i)=>({name:e.g,color:dim==='seg'?SEGVAR[e.g]:['var(--s1)','var(--s2)','var(--s3)','var(--s4)'][i]})))}
+    <div class="chart" id="c-el"></div></div>
+    <div class="card"><h2>Elasticity estimates</h2><div class="tw"><table><thead><tr><th>${dim==='seg'?'Segment':'Category'}</th><th>Bookings</th><th>Elasticity (≤20% off)</th><th>1–10% vs full</th><th>11–20% vs full</th><th>21–30% vs full</th><th>31%+ vs full</th><th class="tl">Demand</th></tr></thead><tbody>
+    ${E.map(e=>`<tr><td>${e.g}</td><td class="num">${e.n}</td><td class="num"><b>${isn(e.core)?e.core.toFixed(2):'–'}</b></td><td class="num">${isn(e.arc1)?e.arc1.toFixed(2):'–'}</td><td class="num">${isn(e.arc2)?e.arc2.toFixed(2):'–'}</td><td class="num">${isn(e.arc3)?e.arc3.toFixed(2):'–'}</td><td class="num">${isn(e.arc4)?e.arc4.toFixed(2):'–'}</td><td class="tl">${isn(e.core)?(e.core<=-1?pill('▲ Elastic','pos'):pill('▼ Inelastic','neg')):'–'}</td></tr>`).join('')}</tbody></table></div>
+    <p class="cap">Columns 4–7 are arc elasticities between the 0% band and each discount band (%Δ occupancy ÷ %Δ price index). They shrink toward zero as occupancy approaches 100%.</p></div>`;
+  P().querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{state.elDim=b.dataset.d;render()});
+  lineChart('c-el',{labels:BANDS,series:E.map((e,i)=>({name:e.g,color:dim==='seg'?SEGVAR[e.g]:['var(--s1)','var(--s2)','var(--s3)','var(--s4)'][i],values:e.bands.map(b=>b.n>=5?b.occ*100:NaN)})),
+    yFmt:(v,t)=>t?v.toFixed(1)+'%':v+'%',h:300,aria:'Occupancy by discount band'})}
+
+function viewCannibal(rs){
+  const C=cannibal(rs);if(!C.length){P().innerHTML=`<div class="card"><h2>Promo cannibalization</h2>${none}</div>`;return}
+  const loss=C.filter(c=>c.delta<0).length,net=sum(C.map(c=>c.net)),idx=Object.fromEntries(C.map(c=>[c.seg+'|'+c.ev,c]));
+  const cellStyle=c=>{const p=Math.min(Math.abs(c.delta)/.45,1)*65;return `--cell:color-mix(in srgb, var(${c.delta<0?'--neg':'--pos'}) ${p.toFixed(0)}%, var(--surface2))`};
+  const segs=SEGS.filter(s=>C.some(c=>c.seg===s)),sorted=[...C].sort((a,b)=>a.delta-b.delta);
+  P().innerHTML=`<div class="card"><h2>Deep discounts (30%+) lose money in ${loss} of ${C.length} segment–event cells</h2>
+    <p class="cap">Revenue yield of 30%+ promotions compared with full-price bookings in the same segment and event. Orange cells are cannibalization; blue cells are incremental. Against a full-price baseline, deep promos in these cells moved revenue by <b class="num">${net<0?'−':'+'}IDR ${Math.abs(net/1e9).toFixed(2)} bn</b>. Cells need at least 5 bookings on each side; “low” confidence means fewer than 10.</p>
+    <div class="tw"><div class="heat" role="table" aria-label="Revenue change of deep promotions">
+      <div class="h"></div>${EVS.map(e=>`<div class="h">${e}</div>`).join('')}
+      ${segs.map(s=>`<div class="rl">${s}</div>`+EVS.map(e=>{const c=idx[s+'|'+e];return c?`<div class="c" style="${cellStyle(c)}" title="${s}, ${e}: ${c.nN} full-price vs ${c.nD} deep-promo bookings, ${pct(c.sold,0)} of promos sold out"><b>${sgn(c.delta*100,0)}</b><small>${c.conf==='Low'?'low n · ':''}n=${c.nN}/${c.nD}</small></div>`:`<div class="c na"><b>n/a</b><small>too few</small></div>`}).join('')).join('')}
+    </div></div></div>
+    <div class="card"><h2>Ranked by severity</h2><div class="tw"><table><thead><tr><th>Segment</th><th>Event</th><th>Full price / deep promo (n)</th><th>Occupancy full → promo</th><th>Revenue yield change</th><th>Promos sold out</th><th>Net impact (IDR mn)</th><th class="tl">Verdict</th></tr></thead><tbody>
+    ${sorted.map(c=>`<tr><td>${c.seg}</td><td class="tl">${c.ev}</td><td class="num">${c.nN} / ${c.nD}${c.conf==='Low'?' <span class="dim">(low)</span>':''}</td><td class="num">${pct(mean(rs.filter(r=>r.seg===c.seg&&r.ev===c.ev&&r.disc===0).map(r=>r.occ)),0)} → ${pct(mean(rs.filter(r=>r.seg===c.seg&&r.ev===c.ev&&r.disc>=30).map(r=>r.occ)),0)}</td><td class="num"><b>${sgn(c.delta*100)}</b></td><td class="num">${pct(c.sold,0)}</td><td class="num">${(c.net/1e6).toFixed(1)}</td><td class="tl">${c.delta<0?pill('▼ Cannibalization','neg'):pill('▲ Incremental','pos')}</td></tr>`).join('')}</tbody></table></div></div>`}
+
+function viewWeekend(rs){
+  const W=weekend(rs);if(!W.length){P().innerHTML=none;return}
+  const lab=W.map(w=>w.seg);
+  P().innerHTML=`<div class="card"><h2>RevPAR: weekend vs. weekday</h2>
+    <p class="cap">Revenue per available room-night, in IDR thousand. Weekend means Saturday or Sunday, taken from the stay date. National holidays that fall on weekdays count as weekdays here.</p>
+    ${legendHTML([{name:'Weekday',color:'var(--wk0)'},{name:'Weekend',color:'var(--wk1)'}])}
+    <div class="chart" id="c-wk"></div></div>
+    <div class="card"><h2>Weekend vs. weekday KPIs</h2><div class="tw"><table><thead><tr><th>Segment</th><th>Day type</th><th>Bookings</th><th>Occupancy</th><th>ADR (IDR k)</th><th>RevPAR (IDR k)</th><th>Avg discount</th><th>Promo share</th><th>RevPAR change</th></tr></thead><tbody>
+    ${W.map(w=>[['Weekday',w.wd],['Weekend',w.we]].map(([t,x])=>x?`<tr><td>${t==='Weekday'?w.seg:'<span class="dim">″</span>'}</td><td class="tl">${t}</td><td class="num">${x.n}</td><td class="num">${pct(x.occ)}</td><td class="num">${k(x.adr)}</td><td class="num">${k(x.revpar)}</td><td class="num">${f1(x.disc)}%</td><td class="num">${pct(x.promo)}</td><td class="num">${t==='Weekend'&&w.wd?`<b>${sgn((x.revpar/w.wd.revpar-1)*100)}</b>`:''}</td></tr>`:'').join('')).join('')}</tbody></table></div></div>`;
+  barChart('c-wk',{labels:lab,series:[{name:'Weekday',color:'var(--wk0)',values:W.map(w=>w.wd?w.wd.revpar/1e3:NaN)},{name:'Weekend',color:'var(--wk1)',values:W.map(w=>w.we?w.we.revpar/1e3:NaN)}],
+    yFmt:(v,t)=>t?Math.round(v).toLocaleString('en-US')+'k':Math.round(v)+'',valFmt:v=>Math.round(v).toLocaleString('en-US'),h:300,aria:'RevPAR weekday vs weekend'})}
+
+function viewEfficiency(rs){
+  const E=efficiency(rs);if(!E.length){P().innerHTML=`<div class="card"><h2>Promo efficiency</h2><p class="cap">A property needs at least 10 full-price and 20 promo bookings to be ranked, so narrow filters may leave nothing to show.</p>${none}</div>`;return}
+  const top=state.effMode==='top',sorted=[...E].sort((a,b)=>top?b.per-a.per:a.per-b.per).slice(0,10);
+  P().innerHTML=`<div class="card"><h2>Revenue uplift per point of discount</h2>
+    <p class="cap">For each property: revenue yield on discounted bookings versus full-price bookings, divided by the average discount depth in points. +0.5 means each point of discount returned about +0.5% revenue. Negative means the promotions lose money. ${E.length} properties meet the minimum sample.</p>
+    <div class="seg" role="group" aria-label="Ranking"><button type="button" data-m="top" aria-pressed="${top}">Top 10</button><button type="button" data-m="bottom" aria-pressed="${!top}">Bottom 10</button></div>
+    ${legendHTML([{name:'Positive uplift',color:'var(--pos)'},{name:'Negative uplift',color:'var(--neg)'}])}
+    <div class="chart" id="c-eff"></div></div>
+    <div class="card"><h2>${top?'Most':'Least'} efficient properties</h2><div class="tw"><table><thead><tr><th>#</th><th class="tl">Property</th><th class="tl">Category</th><th>Bookings (full / promo)</th><th>Avg discount (pts)</th><th>Revenue uplift</th><th>Uplift per point</th></tr></thead><tbody>
+    ${sorted.map((e,i)=>`<tr><td class="num">${i+1}</td><td class="tl">${e.prop}</td><td class="tl">${e.cat}</td><td class="num">${e.nF} / ${e.nP}</td><td class="num">${f1(e.ad)}</td><td class="num">${sgn(e.upl)}</td><td class="num"><b>${e.per>=0?'+':'−'}${Math.abs(e.per).toFixed(2)}</b></td></tr>`).join('')}</tbody></table></div></div>`;
+  P().querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{state.effMode=b.dataset.m;render()});
+  hbarChart('c-eff',{items:sorted.map(e=>({label:e.prop,value:e.per,sub:[{name:'Category',v:e.cat},{name:'Avg discount',v:f1(e.ad)+' pts'},{name:'Revenue uplift',v:sgn(e.upl)},{name:'Per point',v:(e.per>=0?'+':'−')+Math.abs(e.per).toFixed(2)}]})),
+    fmt:(v,t)=>t?v.toFixed(1):(v>=0?'+':'−')+Math.abs(v).toFixed(2),colorFn:it=>it.value>=0?'var(--pos)':'var(--neg)',aria:'Promo efficiency ranking'})}
+
+function viewPlaybook(rs){
+  const O=optimal(rs),ctx=state.ctx,segs=SEGS.filter(s=>rs.some(r=>r.seg===s));
+  const series=segs.map(s=>({name:s,color:SEGVAR[s],values:O[s][ctx].vs})),marks=[];segs.forEach((s,si)=>{const b=O[s][ctx].best;if(b>=0)marks.push({s:si,i:b})});
+  P().innerHTML=`<div class="card"><h2>Which discount depth maximizes revenue?</h2>
+    <p class="cap">Revenue yield change versus selling at full price, by discount band. The circled point is the best band for that segment. Peak means national holidays and weekends; non-peak is everything else. Bands need at least 15 bookings.</p>
+    <div class="seg" role="group" aria-label="Demand context"><button type="button" data-c="Non-peak" aria-pressed="${ctx==='Non-peak'}">Non-peak</button><button type="button" data-c="Peak" aria-pressed="${ctx==='Peak'}">Peak (holiday / weekend)</button></div>
+    ${legendHTML(segs.map(s=>({name:s,color:SEGVAR[s]})))}
+    <div class="chart" id="c-pb"></div></div>
+    <div class="card"><h2>Recommended discount by segment</h2><div class="tw"><table><thead><tr><th>Segment</th><th>Non-peak optimum</th><th>Yield vs full price</th><th>Peak optimum</th><th>Yield vs full price</th></tr></thead><tbody>
+    ${segs.map(s=>{const a=O[s]['Non-peak'],b=O[s]['Peak'];const f=x=>x.best<0?['–','–']:[x.best===0?'<b>No discount</b>':'<b>'+BANDS[x.best]+'</b>',x.best===0?'baseline':sgn(x.vs[x.best])];const A=f(a),B=f(b);
+      return `<tr><td>${s}</td><td class="num">${A[0]}</td><td class="num">${A[1]}</td><td class="num">${B[0]}</td><td class="num">${B[1]}</td></tr>`}).join('')}</tbody></table></div></div>
+    <div class="rec">
+      <div class="card"><h2>1 · Pricing strategy</h2><ul><li>Cap Budget Seeker discounts at 20%; beyond that rooms are already full.</li><li>Discount Family Leisure only off-peak, and no more than 10% on weekends and holidays.</li><li>Stop price-led promotions for Business and Premium guests; offer breakfast, late checkout or upgrades instead.</li></ul></div>
+      <div class="card"><h2>2 · Promo targeting</h2><ul><li>Close deep promotions automatically when forecast occupancy passes about 85–90%.</li><li>Move promo budget to the properties with the highest uplift per point; check the Promo efficiency tab.</li><li>Replace blanket payday and double-date discounts with segment-specific offers.</li></ul></div>
+      <div class="card"><h2>3 · Risk mitigation</h2><ul><li>Confirm with an A/B or geo hold-out before a chain-wide change; promo depth here was not randomized.</li><li>Re-run on contribution margin, since extra volume carries variable cost and commission.</li><li>Cap Premium discounts to protect the brand, and watch competitor prices for price wars.</li></ul></div>
+    </div>`;
+  P().querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{state.ctx=b.dataset.c;render()});
+  lineChart('c-pb',{labels:BANDS,series,marks,zero:true,yFmt:(v,t)=>t?sgn(v):(v>0?'+':'')+v+'%',h:320,aria:'Revenue yield versus full price by discount band'})}
+
+/* ---------- shell ---------- */
+function renderKpis(rs){if(!rs.length){$('#kpis').innerHTML='<div class="kpi"><div class="l">No bookings match these filters</div></div>';return}
+  const K=kpis(rs);const t=[['Gross revenue','IDR '+bn(K.rev)+' bn',K.n.toLocaleString('en-US')+' bookings'],['Occupancy',pct(K.occ),'rooms sold ÷ available'],['ADR','IDR '+k(K.adr)+'k','revenue per room-night sold'],
+    ['RevPAR','IDR '+k(K.revpar)+'k','revenue per available room'],['Promo share',pct(K.promo,0),'bookings with a discount'],['Avg promo depth',f1(K.avgd)+' pts','discounted bookings only']];
+  $('#kpis').innerHTML=t.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('')}
+const VIEWS={overview:viewOverview,elasticity:viewElasticity,cannibalization:viewCannibal,weekend:viewWeekend,efficiency:viewEfficiency,playbook:viewPlaybook};
+function render(){const rs=rows();$('#count').textContent=rs.length.toLocaleString('en-US')+' of '+ALL.length.toLocaleString('en-US')+' bookings';renderKpis(rs);
+  document.querySelectorAll('.tab').forEach(t=>{const on=t.dataset.tab===state.tab;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1});
+  document.querySelectorAll('#f-cat .chip,#f-seg .chip,#f-ev .chip').forEach(c=>c.setAttribute('aria-pressed',state[c.dataset.f].has(c.dataset.v)));
+  if(!rs.length){P().innerHTML=none;return}VIEWS[state.tab](rs)}
+function chips(el,f,vals){$(el).innerHTML=vals.map(v=>`<button type="button" class="chip" data-f="${f}" data-v="${v}" aria-pressed="false">${v}</button>`).join('');
+  $(el).onclick=e=>{const b=e.target.closest('.chip');if(!b)return;const s=state[f];s.has(b.dataset.v)?s.delete(b.dataset.v):s.add(b.dataset.v);render()}}
+chips('#f-cat','cat',CATS);chips('#f-seg','seg',SEGS);chips('#f-ev','ev',EVS);
+$('#f-month').innerHTML+=MONTHS.map((m,i)=>`<option value="${i}">${m} 2026</option>`).join('');
+$('#f-month').onchange=e=>{state.month=e.target.value;render()};
+$('#reset').onclick=()=>{state.cat.clear();state.seg.clear();state.ev.clear();state.month='all';$('#f-month').value='all';render()};
+function setTab(t,push){if(!TABS.includes(t))t='overview';state.tab=t;if(push){try{history.replaceState(null,'','#'+t)}catch(e){location.hash=t}}render()}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>setTab(t.dataset.tab,true));
+window.addEventListener('hashchange',()=>setTab(location.hash.slice(1),false));
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(render,150)});
+state.tab=TABS.includes(location.hash.slice(1))?location.hash.slice(1):'overview';
+render();
+})();
+</script>

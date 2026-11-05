@@ -24,6 +24,8 @@ A marketplace discounted **71% of its bookings by an average of 23 percentage po
 
 > **Transparency note:** the dataset is synthetic and generated from a documented demand model (known elasticities, capacity limits, brand-dilution effect). That lets me check that each SQL method *recovers* the planted truth (see [Methodology](#4-methodology)). It is a demonstration of method and decision framework, not a claim about a real company.
 
+**Interactive dashboard:** [`dashboard/index.html`](dashboard/index.html) is a self-contained web app (no server, no install). Filter by category, segment, event and month, and every KPI, chart and ranking recomputes in the browser. Download the file and open it in any browser, or publish it with GitHub Pages.
+
 ---
 
 ## 2. Business Problem
@@ -201,7 +203,11 @@ dynamic-pricing-portfolio/
 ├── src/
 │   ├── generate_dataset.py              # demand model + dataset generator
 │   ├── run_analysis.py                  # runs every SQL file, exports CSVs
-│   └── make_charts.py                   # builds README charts
+│   ├── make_charts.py                   # builds README charts
+│   └── build_dashboard.py               # embeds the CSV into the web dashboard
+├── dashboard/
+│   ├── template.html                    # dashboard source (HTML + JS, no dependencies)
+│   └── index.html                       # built page with the data embedded
 ├── sql/
 │   ├── 00_schema_and_load.sql
 │   ├── 01_price_elasticity.sql
@@ -226,7 +232,10 @@ export PGDATABASE=pricing                      # plus PGHOST / PGUSER / PGPORT i
 psql -f sql/00_schema_and_load.sql             # run from the project root
 python src/run_analysis.py                     # exports query results to outputs/
 python src/make_charts.py                      # regenerates images/
+python src/build_dashboard.py                  # rebuilds dashboard/index.html (open it in a browser)
 ```
+
+**Publish the dashboard (optional):** in the GitHub repo go to *Settings → Pages*, choose *Deploy from a branch*, branch `main`, folder `/ (root)`. After a minute the dashboard is live at `https://<your-username>.github.io/<repo-name>/dashboard/`.
 
 SQL tested on PostgreSQL 16 (requires 9.4+ for `FILTER` on window aggregates).
 
@@ -235,7 +244,7 @@ SQL tested on PostgreSQL 16 (requires 9.4+ for `FILTER` on window aggregates).
 - **Synthetic data:** results illustrate method and decision logic, not real market behaviour.
 - **Observational elasticity:** promo depth is not randomised; confirm with a controlled price test.
 - **Revenue ≠ profit:** extend with cost per occupied room and OTA commission.
-- **Next:** Tableau / Power BI dashboard on the `outputs/` tables; demand forecast (e.g., gradient boosting) feeding an occupancy-triggered promo switch; a price-optimisation simulation per segment.
+- **Next:** a Tableau / Power BI version on the `outputs/` tables; demand forecast (e.g., gradient boosting) feeding an occupancy-triggered promo switch; a price-optimisation simulation per segment.
 
 ## 10. Contact
 
