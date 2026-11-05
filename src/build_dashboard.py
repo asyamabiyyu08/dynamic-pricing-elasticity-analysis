@@ -1,7 +1,7 @@
 """
 build_dashboard.py - embed the CSV into dashboard/template.html and write the web dashboard.
 
-    python src/build_dashboard.py                 # -> dashboard/index.html (standalone page, GitHub Pages ready)
+    python src/build_dashboard.py                 # -> dashboard/index.html and ./index.html (GitHub Pages ready)
     python src/build_dashboard.py --fragment out.html   # page body only (no <html> wrapper)
 
 The dashboard has no server and no dependencies: all 2,000 records are embedded in the page and every
@@ -32,7 +32,9 @@ if args.fragment:
     print(f"fragment -> {args.fragment} ({len(page)/1024:.0f} KB)")
 else:
     out = ROOT / "dashboard" / "index.html"
-    out.write_text('<!doctype html>\n<html lang="en">\n<meta charset="utf-8">\n'
+    html = ('<!doctype html>\n<html lang="en">\n<meta charset="utf-8">\n'
                    '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-                   + page + "\n</html>\n", encoding="utf-8")
-    print(f"dashboard -> {out} ({out.stat().st_size/1024:.0f} KB)")
+                   + page + "\n</html>\n")
+    out.write_text(html, encoding="utf-8")
+    (ROOT / "index.html").write_text(html, encoding="utf-8")   # root copy => short GitHub Pages URL
+    print(f"dashboard -> {out} and index.html ({out.stat().st_size/1024:.0f} KB)")

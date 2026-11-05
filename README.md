@@ -24,7 +24,7 @@ A marketplace discounted **71% of its bookings by an average of 23 percentage po
 
 > **Transparency note:** the dataset is synthetic and generated from a documented demand model (known elasticities, capacity limits, brand-dilution effect). That lets me check that each SQL method *recovers* the planted truth (see [Methodology](#4-methodology)). It is a demonstration of method and decision framework, not a claim about a real company.
 
-**Interactive dashboard:** [`dashboard/index.html`](dashboard/index.html) is a self-contained web app (no server, no install). Filter by category, segment, event and month, and every KPI, chart and ranking recomputes in the browser. Download the file and open it in any browser, or publish it with GitHub Pages.
+**▶ [Open the live interactive dashboard](https://asyamabiyyu08.github.io/dynamic-pricing-elasticity-analysis/)** (no install). Filter by category, segment, event and month, and every KPI, chart and ranking recomputes in the browser. The page is a single self-contained file ([`index.html`](index.html)), so it also works offline once downloaded.
 
 ---
 
@@ -205,9 +205,10 @@ dynamic-pricing-portfolio/
 │   ├── run_analysis.py                  # runs every SQL file, exports CSVs
 │   ├── make_charts.py                   # builds README charts
 │   └── build_dashboard.py               # embeds the CSV into the web dashboard
+├── index.html                           # built dashboard (served by GitHub Pages)
 ├── dashboard/
 │   ├── template.html                    # dashboard source (HTML + JS, no dependencies)
-│   └── index.html                       # built page with the data embedded
+│   └── index.html                       # built page with the data embedded (same as ./index.html)
 ├── sql/
 │   ├── 00_schema_and_load.sql
 │   ├── 01_price_elasticity.sql
@@ -235,7 +236,7 @@ python src/make_charts.py                      # regenerates images/
 python src/build_dashboard.py                  # rebuilds dashboard/index.html (open it in a browser)
 ```
 
-**Publish the dashboard (optional):** in the GitHub repo go to *Settings → Pages*, choose *Deploy from a branch*, branch `main`, folder `/ (root)`. After a minute the dashboard is live at `https://<your-username>.github.io/<repo-name>/dashboard/`.
+**Publish the dashboard (one-time):** in the GitHub repo go to *Settings → Pages*, choose *Deploy from a branch*, branch `main`, folder `/ (root)`. After a minute the dashboard is live at `https://<your-username>.github.io/<repo-name>/`.
 
 SQL tested on PostgreSQL 16 (requires 9.4+ for `FILTER` on window aggregates).
 
